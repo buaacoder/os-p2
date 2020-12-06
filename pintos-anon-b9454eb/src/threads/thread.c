@@ -15,6 +15,7 @@
 #include "userprog/process.h"
 #endif
 
+
 /* Random value for struct thread's `magic' member.
    Used to detect stack overflow.  See the big comment at the top
    of thread.h for details. */
@@ -86,8 +87,10 @@ struct thread *get_thread_by_sid (tid_t sid) {
     struct list_elem *l_elem;
     for(l_elem=list_begin(&(cur->son_list)); l_elem!=list_end(&(cur->son_list)); l_elem=list_next(l_elem)){
         struct thread *t = list_entry(l_elem, struct thread, son_elem);
-        if(t->tid == sid)
-            return t;
+        if(t->tid == sid){
+          // printf("##<find son>%d %d\n",t->tid,sid);
+          return t;
+        }
     }
     return NULL;
 }

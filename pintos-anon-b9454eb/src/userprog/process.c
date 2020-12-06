@@ -41,9 +41,11 @@ process_execute (const char *file_name)
   if (fn_copy == NULL)
     return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
+  // printf("##<full args>%s\n",fn_copy);
 
   /* Create a new thread to execute FILE_NAME. */
   fname = strtok_r(file_name, " ", &save_ptr);
+  // printf("##<file name>%s\n",fname);
   tid = thread_create (fname, PRI_DEFAULT, start_process, fn_copy);
   if (tid == TID_ERROR)
   {
@@ -94,20 +96,26 @@ start_process (void *file_name_)
     esp -= strlen(token)+1;
     strlcpy(esp, token, strlen(token)+2);
     arg[n++] = esp;
+    // printf("##<%4d args>%s",n-1,esp);
   }
   while((int)esp%4!=0)
   {
     esp--;
   }
   int *p = ((int *)esp)-1;
-  *(p--) = 0;
+  *p = 0;
+  p--;
   for(i=n-1;i>=0;i--)
   {
-    *p-- = (int *)arg[i];
+    *p = (int *)arg[i];
+    p--;
   }
-  *(p--) = p+1;
-  *(p--) = n;
-  *(p--) = 0;
+  *p = p+1;
+  p--;
+  *p = n;
+  p--;
+  *p = 0;
+  p--;
   esp = p+1;
   if_.esp = esp;
   // printf("hhhhhhhhhhhhhhhhhhhhhh11\n");
@@ -157,11 +165,16 @@ process_wait (tid_t child_tid UNUSED)
     // printf("wait:%d\n",son->tid);
     son->waited = true;
     son->saved = true;
-    sema_up(&son->over);
-    sema_down(&son->sema_wait);
     ret = son->ret;
+    // printf("##<before syn>%d %d %d\n",son->ret,son->tid,child_tid);
+    sema_up(&son->over);
+    // printf("##<during syn>%d %d %d\n",son->ret,son->tid,child_tid);
+    sema_down(&son->sema_wait);
+    // printf("##<after syn>%d %d %d\n",son->ret,son->tid,child_tid);
   }
+  // printf("##<wait before yeild>%d\n",ret);
   thread_yield();
+  // printf("##<wait before return>%d\n",ret);
   return ret;
 }
 
@@ -193,6 +206,7 @@ process_exit (void)
   if(cur->exec_file!=NULL)
   {
     // printf("hhhhhhhhhhhhhhhh\n");
+    // file_allow_write(cur->exec_file);
     file_close(cur->exec_file);
   }
 
