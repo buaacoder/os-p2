@@ -100,6 +100,7 @@ struct thread
     struct semaphore sema_wait;
     struct semaphore get_msg;
     struct semaphore over;
+    struct semaphore destro;
     struct list file_list;
     struct list son_list;
     struct list_elem son_elem;

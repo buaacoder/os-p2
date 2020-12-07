@@ -165,12 +165,13 @@ process_wait (tid_t child_tid UNUSED)
     // printf("wait:%d\n",son->tid);
     son->waited = true;
     son->saved = true;
-    ret = son->ret;
-    // printf("##<before syn>%d %d %d\n",son->ret,son->tid,child_tid);
+    // printf("##<before syn>%d %d\n",son->ret,child_tid);
     sema_up(&son->over);
-    // printf("##<during syn>%d %d %d\n",son->ret,son->tid,child_tid);
+    // printf("##<during syn>%p %d\n",son,son->ret);
     sema_down(&son->sema_wait);
-    // printf("##<after syn>%d %d %d\n",son->ret,son->tid,child_tid);
+    ret = son->ret;
+    sema_up(&son->destro);
+    // printf("##<after syn>\n");
   }
   // printf("##<wait before yeild>%d\n",ret);
   thread_yield();
@@ -196,12 +197,13 @@ process_exit (void)
   if(cur->father!=NULL)
   {
     sema_down(&cur->over);
+    list_remove(&(cur->son_elem));
   }
-  list_remove(&(cur->son_elem));
+  // printf("##<child exit>%p %d\n",cur,cur->ret);
   if(cur->waited==true)
   {
-    // printf("exit: %d\n",cur->tid);
     sema_up(&cur->sema_wait);
+    sema_down(&cur->destro);
   }
   if(cur->exec_file!=NULL)
   {
@@ -223,11 +225,14 @@ process_exit (void)
          directory, or our active page directory will be one
          that's been freed (and cleared). */
       printf("%s: exit(%d)\n", cur->name, cur->ret);
+      // printf("$$<PE1>\n");
       cur->pagedir = NULL;
       pagedir_activate (NULL);
+      // printf("$$<PE2>\n");
       pagedir_destroy (pd);
+      // printf("$$<PE3>\n");
     }
-
+  // printf("##<child exit>%d\n",cur->waited);
 
 }
 

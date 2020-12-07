@@ -15,7 +15,6 @@
 #include "userprog/process.h"
 #endif
 
-
 /* Random value for struct thread's `magic' member.
    Used to detect stack overflow.  See the big comment at the top
    of thread.h for details. */
@@ -322,6 +321,7 @@ thread_exit (void)
      when it calls thread_schedule_tail(). */
   intr_disable ();
   list_remove (&thread_current()->allelem);
+  // printf("$$<PE4>\n");
   thread_current ()->status = THREAD_DYING;
   schedule ();
   NOT_REACHED ();
@@ -508,6 +508,7 @@ init_thread (struct thread *t, const char *name, int priority)
   sema_init(&(t->sema_load), 0);
   sema_init(&(t->get_msg), 1);
   sema_init(&(t->over), 0);
+  sema_init(&(t->destro),0);
   intr_set_level (old_level);
 }
 
