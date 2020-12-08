@@ -41,9 +41,11 @@ process_execute (const char *file_name)
   if (fn_copy == NULL)
     return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
+  // printf("##<full args>%s\n",fn_copy);
 
   /* Create a new thread to execute FILE_NAME. */
   fname = strtok_r(file_name, " ", &save_ptr);
+  // printf("##<file name>%s\n",fname);
   tid = thread_create (fname, PRI_DEFAULT, start_process, fn_copy);
   if (tid == TID_ERROR)
   {
@@ -94,20 +96,26 @@ start_process (void *file_name_)
     esp -= strlen(token)+1;
     strlcpy(esp, token, strlen(token)+2);
     arg[n++] = esp;
+    // printf("##<%4d args>%s",n-1,esp);
   }
   while((int)esp%4!=0)
   {
     esp--;
   }
   int *p = ((int *)esp)-1;
-  *(p--) = 0;
+  *p = 0;
+  p--;
   for(i=n-1;i>=0;i--)
   {
-    *p-- = (int *)arg[i];
+    *p = (int *)arg[i];
+    p--;
   }
-  *(p--) = p+1;
-  *(p--) = n;
-  *(p--) = 0;
+  *p = p+1;
+  p--;
+  *p = n;
+  p--;
+  *p = 0;
+  p--;
   esp = p+1;
   if_.esp = esp;
   // printf("hhhhhhhhhhhhhhhhhhhhhh11\n");
@@ -157,11 +165,17 @@ process_wait (tid_t child_tid UNUSED)
     // printf("wait:%d\n",son->tid);
     son->waited = true;
     son->saved = true;
+    // printf("##<before syn>%d %d\n",son->ret,child_tid);
     sema_up(&son->over);
+    // printf("##<during syn>%p %d\n",son,son->ret);
     sema_down(&son->sema_wait);
     ret = son->ret;
+    sema_up(&son->destro);
+    // printf("##<after syn>\n");
   }
+  // printf("##<wait before yeild>%d\n",ret);
   thread_yield();
+  // printf("##<wait before return>%d\n",ret);
   return ret;
 }
 
@@ -183,16 +197,18 @@ process_exit (void)
   if(cur->father!=NULL)
   {
     sema_down(&cur->over);
+    list_remove(&(cur->son_elem));
   }
-  list_remove(&(cur->son_elem));
+  // printf("##<child exit>%p %d\n",cur,cur->ret);
   if(cur->waited==true)
   {
-    // printf("exit: %d\n",cur->tid);
     sema_up(&cur->sema_wait);
+    sema_down(&cur->destro);
   }
   if(cur->exec_file!=NULL)
   {
     // printf("hhhhhhhhhhhhhhhh\n");
+    // file_allow_write(cur->exec_file);
     file_close(cur->exec_file);
   }
 
@@ -209,11 +225,14 @@ process_exit (void)
          directory, or our active page directory will be one
          that's been freed (and cleared). */
       printf("%s: exit(%d)\n", cur->name, cur->ret);
+      // printf("$$<PE1>\n");
       cur->pagedir = NULL;
       pagedir_activate (NULL);
+      // printf("$$<PE2>\n");
       pagedir_destroy (pd);
+      // printf("$$<PE3>\n");
     }
-
+  // printf("##<child exit>%d\n",cur->waited);
 
 }
 

@@ -86,8 +86,10 @@ struct thread *get_thread_by_sid (tid_t sid) {
     struct list_elem *l_elem;
     for(l_elem=list_begin(&(cur->son_list)); l_elem!=list_end(&(cur->son_list)); l_elem=list_next(l_elem)){
         struct thread *t = list_entry(l_elem, struct thread, son_elem);
-        if(t->tid == sid)
-            return t;
+        if(t->tid == sid){
+          // printf("##<find son>%d %d\n",t->tid,sid);
+          return t;
+        }
     }
     return NULL;
 }
@@ -319,6 +321,7 @@ thread_exit (void)
      when it calls thread_schedule_tail(). */
   intr_disable ();
   list_remove (&thread_current()->allelem);
+  // printf("$$<PE4>\n");
   thread_current ()->status = THREAD_DYING;
   schedule ();
   NOT_REACHED ();
@@ -505,6 +508,7 @@ init_thread (struct thread *t, const char *name, int priority)
   sema_init(&(t->sema_load), 0);
   sema_init(&(t->get_msg), 1);
   sema_init(&(t->over), 0);
+  sema_init(&(t->destro),0);
   intr_set_level (old_level);
 }
 

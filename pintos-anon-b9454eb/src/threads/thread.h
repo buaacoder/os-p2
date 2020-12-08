@@ -100,6 +100,7 @@ struct thread
     struct semaphore sema_wait;
     struct semaphore get_msg;
     struct semaphore over;
+    struct semaphore destro;
     struct list file_list;
     struct list son_list;
     struct list_elem son_elem;
@@ -108,10 +109,10 @@ struct thread
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
-#ifdef USERPROG
+// #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
-#endif
+// #endif
 
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */

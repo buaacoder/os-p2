@@ -140,6 +140,7 @@ syscall_handler (struct intr_frame *f)
 void IExit(int status)
 {
   struct thread *t = thread_current();
+  // printf("##<exit>%d\n",status);
   t->ret = status;
   thread_exit();
 }
