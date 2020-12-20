@@ -3,6 +3,7 @@
 
 #include <debug.h>
 #include <list.h>
+#include <hash.h>
 #include <stdint.h>
 #include "threads/synch.h"
 
@@ -15,6 +16,7 @@ enum thread_status
     THREAD_DYING        /* About to be destroyed. */
   };
 
+typedef int mapid_t;
 /* Thread identifier type.
    You can redefine this to whatever type you like. */
 typedef int tid_t;
@@ -108,7 +110,10 @@ struct thread
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
-
+    struct hash *sup_page_table;
+    struct list mmap_files;
+    int mmap_counter;
+    void *esp;
 // #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */

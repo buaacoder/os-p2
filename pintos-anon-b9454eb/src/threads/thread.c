@@ -500,6 +500,9 @@ init_thread (struct thread *t, const char *name, int priority)
   t->exec_file = NULL;
   t->magic = THREAD_MAGIC;
 
+  list_init(&(t->mmap_files));
+  t->mmap_counter = 1;
+
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
   list_init(&t->file_list);
